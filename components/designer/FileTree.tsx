@@ -103,7 +103,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
   showDetails
 }) => {
   const isFolder = item.type === 'folder';
-  const isSystem = item.type === 'external_system';
+  const isSystem = item.type === 'externalSys';
   const hasChildren = isFolder || isSystem; // Both can have children
   const isActive = activeId === item.id;
   const [isDragOver, setIsDragOver] = useState(false);
@@ -225,7 +225,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
       case 'frontend': return <Layout size={14} className="text-blue-500" />;
       case 'backend': return <Server size={14} className="text-green-500" />;
       case 'database': return <Database size={14} className="text-amber-500" />;
-      case 'external': return <Globe size={14} className="text-purple-500" />;
+      case 'externalApi': return <Globe size={14} className="text-purple-500" />;
       case 'settings': return <Settings size={14} className="text-gray-500" />;
       case 'git_repo': return <GitGraph size={14} className="text-orange-600" />;
       default: return <FileType2 size={14} className="text-gray-400" />;
@@ -316,7 +316,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, targetItem, root
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  const isFolder = targetItem ? (targetItem.type === 'folder' || targetItem.type === 'external_system') : true; // Root is effectively a folder
+  const isFolder = targetItem ? (targetItem.type === 'folder' || targetItem.type === 'externalSys') : true; // Root is effectively a folder
 
   return (
     <div 

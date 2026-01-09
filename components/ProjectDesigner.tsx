@@ -31,7 +31,7 @@ import { LOCALE } from '../constants';
 import FrontendDesigner from './designer/FrontendDesigner';
 import BackendDesigner from './designer/BackendDesigner';
 import DatabaseDesigner from './designer/DatabaseDesigner';
-import ExternalApiDesigner from './designer/ExternalApiDesigner';
+import ApiEditor from './designer/sysinterface/ApiEditor';
 import GitRepository from './designer/GitRepository';
 import ProjectSettings from './designer/ProjectSettings';
 import DebugConsole from './designer/DebugConsole';
@@ -236,7 +236,7 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
   };
 
   const handleOpenFile = (file: FileSystemItem) => {
-    // Only block standard folders, allow 'external_system' to open
+    // Only block standard folders, allow 'externalSys' to open
     if (file.type === 'folder') return;
     
     const existingTab = tabs.find(t => t.fileId === file.id);
@@ -415,6 +415,13 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
     if (action === 'new_file') {
       let type: FileType = 'file'; 
       if (currentRootType === 'pages' || currentRootType === 'apps') type = 'frontend'; 
+      // If we are in 'external' root type, check hierarchy
+      if (currentRootType === 'external') {
+          // If item is 'externalSys' (folder-like) -> create 'externalApi'.
+          if (item && (item.type === 'externalSys' || item.type === 'folder')) {
+              type = 'externalApi';
+          }
+      }
       
       setDialog({ isOpen: true, type: 'create_file', targetId: targetId, value: '', parentType: type, rootType: currentRootType });
     } else if (action === 'new_folder') {
@@ -474,7 +481,7 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
             const isFolder = type === 'create_folder';
             let fileType = isFolder ? 'folder' : (parentType || 'file');
             
-            if (!isFolder) {
+            if (!isFolder && fileType === 'file') {
                 const ext = value.split('.').pop()?.toLowerCase();
                 if (ext && ['html', 'css', 'js', 'ts', 'jsx', 'tsx', 'json', 'md', 'xml', 'yaml', 'yml', 'sql', 'py', 'java', 'properties'].includes(ext)) {
                     fileType = 'file';
@@ -510,12 +517,12 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
       if (root === 'apis') type = 'backend';
       if (root === 'models') type = 'database';
       if (root === 'external') {
-          // If adding folder-like structure at root of External, it's a System
-          if (isFolder) type = 'external_system';
-          else type = 'external';
+          // Root of External is always a External System if it's a folder-like structure requested
+          if (isFolder) type = 'externalSys';
+          else type = 'file'; 
       }
       
-      setDialog({ isOpen: true, type: isFolder ? 'create_folder' : 'create_file', targetId: null, value: '', parentType: type, rootType: root });
+      setDialog({ isOpen: true, type: isFolder && root !== 'external' ? 'create_folder' : 'create_file', targetId: null, value: '', parentType: type, rootType: root });
   };
 
   const activeTab = tabs.find(t => t.id === activeTabId);
@@ -529,7 +536,6 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
         setTabContextMenu({ ...tabContextMenu, tabId: null });
       }}
     >
-      
       {/* 1. Project Explorer Sidebar */}
       <ProjectExplorer 
         isVisible={showExplorer}
@@ -576,8 +582,8 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
                  let Icon = Layout;
                  if (tab.type === 'backend') Icon = Server;
                  if (tab.type === 'database') Icon = Database;
-                 if (tab.type === 'external') Icon = Globe;
-                 if (tab.type === 'external_system') Icon = ServerCog; // Icon for system config
+                 if (tab.type === 'externalApi') Icon = Globe;
+                 if (tab.type === 'externalSys') Icon = ServerCog; 
                  if (tab.type === 'settings') Icon = Settings;
                  if (tab.type === 'git_repo') Icon = GitGraph;
                  if (tab.type === 'file') Icon = FileCode2;
@@ -647,8 +653,8 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
                   {activeFileObject.type === 'frontend' && <FrontendDesigner file={activeFileObject} lang={lang} />}
                   {activeFileObject.type === 'backend' && <BackendDesigner file={activeFileObject} />}
                   {activeFileObject.type === 'database' && <DatabaseDesigner file={activeFileObject} />}
-                  {activeFileObject.type === 'external' && <ExternalApiDesigner file={activeFileObject} />}
-                  {activeFileObject.type === 'external_system' && <SystemConfigEditor file={activeFileObject} />}
+                  {activeFileObject.type === 'externalApi' && <ApiEditor key={activeFileObject.id} file={activeFileObject} lang={lang} />} 
+                  {activeFileObject.type === 'externalSys' && <SystemConfigEditor file={activeFileObject} lang={lang} />}
                   {activeFileObject.type === 'file' && <UnifiedFileEditor file={activeFileObject} />} 
                   {activeFileObject.type === 'settings' && <ProjectSettings />}
                   {activeFileObject.type === 'git_repo' && <GitRepository lang={lang} rootType={activeFileObject.rootType || ''} />}

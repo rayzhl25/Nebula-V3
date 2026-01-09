@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Plus, 
@@ -16,17 +17,13 @@ import {
   ChevronRight,
   Wrench,
   FolderCog,
-  Check,
-  Bold,
-  Italic,
-  Underline,
-  List,
-  Link as LinkIcon,
-  Upload
+  Upload,
+  Check
 } from 'lucide-react';
 import { LOCALE, RESOURCE_TYPES } from '../constants';
 import { Language, Resource, ResourceType } from '../types';
 import { getResources, createResource, updateResource, deleteResource } from '../services/mockService';
+import RichTextEditor from './common/RichTextEditor';
 
 interface ResourceListProps {
   lang: Language;
@@ -424,7 +421,7 @@ const ResourceList: React.FC<ResourceListProps> = ({ lang }) => {
                         <div className="p-4">
                            <h3 className="font-bold text-gray-800 dark:text-white truncate" title={res.name}>{res.name}</h3>
                            <p className="text-xs text-gray-500 font-mono mb-2 truncate">{res.code}</p>
-                           <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 h-10 mb-3">{res.description}</p>
+                           <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 h-10 mb-3" dangerouslySetInnerHTML={{ __html: res.description }}></p>
                            
                            <div className="flex justify-between items-center text-xs text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-700">
                               <span>{res.author}</span>
@@ -452,7 +449,7 @@ const ResourceList: React.FC<ResourceListProps> = ({ lang }) => {
                            <tr key={res.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                               <td className="px-6 py-4">
                                  <div className="font-medium text-gray-900 dark:text-white">{res.name}</div>
-                                 <div className="text-xs text-gray-500 truncate max-w-xs">{res.description}</div>
+                                 <div className="text-xs text-gray-500 truncate max-w-xs">{res.description.replace(/<[^>]+>/g, '')}</div>
                               </td>
                               <td className="px-6 py-4 text-sm font-mono text-gray-500">{res.code}</td>
                               <td className="px-6 py-4">
@@ -564,7 +561,7 @@ const ResourceList: React.FC<ResourceListProps> = ({ lang }) => {
       {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
-           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
               <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                  <h2 className="text-xl font-bold text-gray-800 dark:text-white">
                     {modalMode === 'create' ? t.createResource : t.editResource}
@@ -669,24 +666,11 @@ const ResourceList: React.FC<ResourceListProps> = ({ lang }) => {
 
                  <div>
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">{t.resDesc}</label>
-                    
-                    {/* Fake Rich Text Editor */}
-                    <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800 focus-within:ring-2 focus-within:ring-nebula-500 transition-shadow">
-                        <div className="flex items-center gap-1 p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                            <button className="p-1 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><Bold size={14} /></button>
-                            <button className="p-1 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><Italic size={14} /></button>
-                            <button className="p-1 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><Underline size={14} /></button>
-                            <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                            <button className="p-1 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><List size={14} /></button>
-                            <button className="p-1 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><LinkIcon size={14} /></button>
-                        </div>
-                        <textarea 
-                          value={formData.description} 
-                          onChange={e => setFormData({...formData, description: e.target.value})}
-                          className="w-full px-4 py-3 bg-transparent outline-none h-32 resize-none text-gray-800 dark:text-white placeholder-gray-400"
-                          placeholder={t.richTextPlaceholder}
-                        />
-                    </div>
+                    <RichTextEditor 
+                      value={formData.description || ''} 
+                      onChange={val => setFormData({...formData, description: val})} 
+                      placeholder={t.richTextPlaceholder}
+                    />
                  </div>
               </div>
 

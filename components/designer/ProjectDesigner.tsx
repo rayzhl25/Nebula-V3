@@ -31,13 +31,12 @@ import { LOCALE } from '../constants';
 import FrontendDesigner from './designer/FrontendDesigner';
 import BackendDesigner from './designer/BackendDesigner';
 import DatabaseDesigner from './designer/DatabaseDesigner';
-// import ExternalApiDesigner from './designer/ExternalApiDesigner'; // No longer used for external type in this context
-import ApiEditor from './designer/sysinterface/ApiEditor'; // New Editor
+import ApiEditor from './designer/sysinterface/ApiEditor';
 import GitRepository from './designer/GitRepository';
 import ProjectSettings from './designer/ProjectSettings';
 import DebugConsole from './designer/DebugConsole';
 import UnifiedFileEditor from './designer/editors/UnifiedFileEditor'; 
-import SystemConfigEditor from './designer/sysinterface/SystemConfigEditor';
+import SystemConfigEditor from './designer/sysinterface/SystemConfigEditor'; // Import new editor path
 import { ProjectExplorer } from './designer/ProjectExplorer';
 import { ContextMenu, FileTree } from './designer/FileTree';
 import { 
@@ -55,7 +54,6 @@ interface ProjectDesignerProps {
   onBack: () => void;
 }
 
-// ... (Interface Tab, FileDialogState remain same)
 interface Tab {
   id: string;
   fileId: string;
@@ -238,7 +236,7 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
   };
 
   const handleOpenFile = (file: FileSystemItem) => {
-    // Only block standard folders, allow 'external_system' to open
+    // Only block standard folders, allow 'system' to open
     if (file.type === 'folder') return;
     
     const existingTab = tabs.find(t => t.fileId === file.id);
@@ -417,9 +415,14 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
     if (action === 'new_file') {
       let type: FileType = 'file'; 
       if (currentRootType === 'pages' || currentRootType === 'apps') type = 'frontend'; 
-      // If we are in 'external' root type, and we are adding to a 'external_system' (folder-like), it should be 'external' (API)
-      if (currentRootType === 'external' && item && item.type === 'external_system') {
-          type = 'external';
+      // If we are in 'external' root type, check hierarchy
+      if (currentRootType === 'external') {
+          // If no item selected (root context) -> we create system (handled by addRootItem normally, but here context menu)
+          // Actually, root context menu handles creating system via specific logic if needed, but 'new_file' usually implies file.
+          // If targetItem is a System or Folder -> create 'externalApi'.
+          if (item && (item.type === 'system' || item.type === 'folder')) {
+              type = 'externalApi';
+          }
       }
       
       setDialog({ isOpen: true, type: 'create_file', targetId: targetId, value: '', parentType: type, rootType: currentRootType });
@@ -516,12 +519,11 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
       if (root === 'apis') type = 'backend';
       if (root === 'models') type = 'database';
       if (root === 'external') {
-          // If adding folder-like structure at root of External, it's a System
-          if (isFolder) type = 'external_system';
-          else type = 'external';
+          // Root of External is always a System
+          type = 'system';
       }
       
-      setDialog({ isOpen: true, type: isFolder ? 'create_folder' : 'create_file', targetId: null, value: '', parentType: type, rootType: root });
+      setDialog({ isOpen: true, type: isFolder && root !== 'external' ? 'create_folder' : 'create_file', targetId: null, value: '', parentType: type, rootType: root });
   };
 
   const activeTab = tabs.find(t => t.id === activeTabId);
@@ -535,7 +537,6 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
         setTabContextMenu({ ...tabContextMenu, tabId: null });
       }}
     >
-      
       {/* 1. Project Explorer Sidebar */}
       <ProjectExplorer 
         isVisible={showExplorer}
@@ -582,8 +583,8 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
                  let Icon = Layout;
                  if (tab.type === 'backend') Icon = Server;
                  if (tab.type === 'database') Icon = Database;
-                 if (tab.type === 'external') Icon = Globe;
-                 if (tab.type === 'external_system') Icon = ServerCog; // Icon for system config
+                 if (tab.type === 'externalApi') Icon = Globe;
+                 if (tab.type === 'system') Icon = ServerCog; 
                  if (tab.type === 'settings') Icon = Settings;
                  if (tab.type === 'git_repo') Icon = GitGraph;
                  if (tab.type === 'file') Icon = FileCode2;
@@ -653,8 +654,8 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
                   {activeFileObject.type === 'frontend' && <FrontendDesigner file={activeFileObject} lang={lang} />}
                   {activeFileObject.type === 'backend' && <BackendDesigner file={activeFileObject} />}
                   {activeFileObject.type === 'database' && <DatabaseDesigner file={activeFileObject} />}
-                  {activeFileObject.type === 'external' && <ApiEditor file={activeFileObject} lang={lang} />} 
-                  {activeFileObject.type === 'external_system' && <SystemConfigEditor file={activeFileObject} lang={lang} />}
+                  {activeFileObject.type === 'externalApi' && <ApiEditor file={activeFileObject} lang={lang} />} 
+                  {activeFileObject.type === 'system' && <SystemConfigEditor file={activeFileObject} lang={lang} />}
                   {activeFileObject.type === 'file' && <UnifiedFileEditor file={activeFileObject} />} 
                   {activeFileObject.type === 'settings' && <ProjectSettings />}
                   {activeFileObject.type === 'git_repo' && <GitRepository lang={lang} rootType={activeFileObject.rootType || ''} />}
@@ -695,6 +696,7 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
         />
       )}
 
+      {/* ... (keep other modals like tabs context menu, rename dialog etc) ... */}
       {tabContextMenu.tabId && (
         <div 
           className="fixed z-50 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 text-xs text-gray-700 dark:text-gray-200"
@@ -712,105 +714,4 @@ const ProjectDesigner: React.FC<ProjectDesignerProps> = ({ project, lang, onBack
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[1px]">
            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 w-80 animate-in fade-in zoom-in-95 duration-200">
               <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-3">
-                 {dialog.type === 'rename' ? 'Rename' : dialog.type === 'create_folder' ? 'New Folder' : 'New File'}
-              </h3>
-              <input 
-                type="text" 
-                value={dialog.value} 
-                onChange={(e) => setDialog({ ...dialog, value: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-nebula-500 outline-none mb-4"
-                autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
-              />
-              <div className="flex justify-end gap-2">
-                 <button onClick={() => setDialog({ ...dialog, isOpen: false })} className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">Cancel</button>
-                 <button onClick={handleDialogSubmit} className="px-3 py-1.5 text-xs font-medium bg-nebula-600 text-white hover:bg-nebula-700 rounded-md">Confirm</button>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {isProjectDirOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-6">
-           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-5xl h-[80vh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-                 <div className="flex items-center gap-2">
-                    <FolderInput className="text-nebula-600" size={20} />
-                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">{t.openProjectDir}</h2>
-                 </div>
-                 <button onClick={() => setIsProjectDirOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
-                    <X size={20} />
-                 </button>
-              </div>
-              
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                 <label className="flex items-center gap-3 cursor-pointer w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-nebula-500 dark:hover:border-nebula-500 transition-colors">
-                    <FolderIcon className="text-gray-400" size={24} />
-                    <div className="flex-1">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200 block">Select Local Project Directory</span>
-                        <span className="text-xs text-gray-500 block">Click to browse folder...</span>
-                    </div>
-                    <input type="file" className="hidden" multiple {...{webkitdirectory: "", directory: ""}} />
-                 </label>
-              </div>
-
-              <div className="flex-1 flex overflow-hidden">
-                 <div className="flex-1 border-r border-gray-200 dark:border-gray-700 flex flex-col min-w-0">
-                    <div className="p-2 bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                        Online Files (Remote)
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-2">
-                        <FileTree 
-                            items={pages} 
-                            activeId={null}
-                            onSelect={() => {}} 
-                            onToggle={() => {}} 
-                            onContextMenu={() => {}}
-                            showDetails={true}
-                        />
-                    </div>
-                 </div>
-
-                 <div className="w-14 bg-gray-50 dark:bg-gray-800 border-x border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center gap-4 z-10 shadow-sm">
-                    <button className="p-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 hover:text-nebula-600 hover:border-nebula-500 transition-all shadow-sm" title="Sync to Local">
-                        <ChevronRight size={16} />
-                    </button>
-                    <button className="p-1.5 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 hover:text-nebula-600 hover:border-nebula-500 transition-all shadow-sm" title="Sync to Remote">
-                        <ChevronLeft size={16} />
-                    </button>
-                 </div>
-
-                 <div className="flex-1 flex flex-col min-w-0">
-                    <div className="p-2 bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                        Local Files (Unseen)
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-2">
-                        <FileTree 
-                            items={initialLocalFiles} 
-                            activeId={null}
-                            onSelect={() => {}} 
-                            onToggle={() => {}} 
-                            onContextMenu={() => {}}
-                            showDetails={true}
-                        />
-                    </div>
-                 </div>
-              </div>
-              
-              <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-end gap-3">
-                 <button onClick={() => setIsProjectDirOpen(false)} className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium text-sm">
-                    Close
-                 </button>
-                 <button className="px-6 py-2 rounded-lg bg-nebula-600 text-white hover:bg-nebula-700 font-medium text-sm flex items-center gap-2">
-                    Sync Changes
-                 </button>
-              </div>
-           </div>
-        </div>
-      )}
-
-    </div>
-  );
-};
-
-export default ProjectDesigner;
+                 {dialog.type === 'rename' ? 'Rename' : dialog.type === 'create_folder' ? 'New

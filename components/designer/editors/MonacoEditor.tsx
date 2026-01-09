@@ -3,8 +3,11 @@ import React, { useEffect, useState } from 'react';
 import Editor, { loader } from '@monaco-editor/react';
 import { Loader2 } from 'lucide-react';
 
+const MONACO_VERSION = '0.45.0';
+const CDN_BASE = `https://cdn.jsdelivr.net/npm/monaco-editor@${MONACO_VERSION}/min`;
+
 // Configure Monaco to load from CDN
-loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+loader.config({ paths: { vs: `${CDN_BASE}/vs` } });
 
 interface MonacoEditorProps {
   language: string;

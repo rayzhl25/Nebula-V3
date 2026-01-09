@@ -3,9 +3,8 @@
 import { User, SystemInfo, GitCommit, GitFileStatus, GitDiffLine, FileSystemItem, FileType } from '../types';
 import { MOCK_DEPARTMENTS, MOCK_DEVELOPERS, MOCK_ROLES, MOCK_PERMISSIONS, MOCK_TEMPLATE_LIST, MOCK_ORGANIZATIONS, MOCK_RESOURCES } from '../constants';
 
-// ... (Keep existing User/Auth/System/Project services) ...
+// ... (keep existing service functions login, changePassword, getSystemInfo, etc.) ...
 export const login = async (username: string): Promise<User> => {
-// ... (keep login implementation)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
@@ -19,7 +18,6 @@ export const login = async (username: string): Promise<User> => {
 };
 
 export const changePassword = async (oldPass: string, newPass: string): Promise<boolean> => {
-// ... (keep changePassword implementation)
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (oldPass === '123456') {
@@ -32,7 +30,6 @@ export const changePassword = async (oldPass: string, newPass: string): Promise<
 };
 
 export const getSystemInfo = async (): Promise<SystemInfo> => {
-// ... (keep getSystemInfo implementation)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
@@ -48,7 +45,6 @@ export const getSystemInfo = async (): Promise<SystemInfo> => {
 };
 
 export const createProject = async (data: any): Promise<boolean> => {
-// ... (keep createProject implementation)
   console.log("Calling Backend API [POST /api/projects] with data:", data);
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -58,7 +54,6 @@ export const createProject = async (data: any): Promise<boolean> => {
 };
 
 export const getProjectMembers = async (): Promise<any[]> => {
-// ... (keep getProjectMembers implementation)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([
@@ -74,7 +69,6 @@ export const getProjectMembers = async (): Promise<any[]> => {
 };
 
 export const updateProject = async (id: number, data: any): Promise<boolean> => {
-// ... (keep updateProject implementation)
   console.log(`Calling Backend API [PUT /api/projects/${id}] with data:`, data);
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -84,7 +78,6 @@ export const updateProject = async (id: number, data: any): Promise<boolean> => 
 };
 
 export const copyProject = async (id: number): Promise<boolean> => {
-// ... (keep copyProject implementation)
   console.log(`Calling Backend API [POST /api/projects/${id}/copy]`);
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -94,7 +87,6 @@ export const copyProject = async (id: number): Promise<boolean> => {
 };
 
 export const getProjectDeleteInfo = async (id: number): Promise<any> => {
-// ... (keep getProjectDeleteInfo implementation)
   console.log(`Calling Backend API [GET /api/projects/${id}/delete-info]`);
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -115,7 +107,6 @@ export const getProjectDeleteInfo = async (id: number): Promise<any> => {
 };
 
 export const deleteProject = async (id: number, options: any): Promise<boolean> => {
-// ... (keep deleteProject implementation)
   console.log(`Calling Backend API [DELETE /api/projects/${id}] with params:`, options);
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -124,7 +115,7 @@ export const deleteProject = async (id: number, options: any): Promise<boolean> 
   });
 };
 
-// ... (Keep Organization, Dept, Developer, Role, Template, Resource services) ...
+// ... (keep Org/Dept/Dev/Role/Template/Resource services) ...
 export const getOrganizations = async (): Promise<any[]> => {
   return new Promise((resolve) => setTimeout(() => resolve([...MOCK_ORGANIZATIONS]), 600));
 };
@@ -206,8 +197,6 @@ export const deleteResource = async (id: string): Promise<boolean> => {
   return new Promise((resolve) => setTimeout(() => resolve(true), 800));
 };
 
-// --- New Service Methods for System & API ---
-
 export const saveSystemConfig = async (config: any): Promise<boolean> => {
     console.log("Calling Backend API [POST /api/system/config] with data:", config);
     return new Promise((resolve) => {
@@ -226,7 +215,6 @@ export const saveApiConfig = async (apiData: any): Promise<boolean> => {
 
 // In-memory mock database for file system
 const MOCK_FILES: Record<string, FileSystemItem[]> = {
-    // ... (keep MOCK_FILES content as is)
     pages: [
         { id: 'p1', name: '登录页面', type: 'frontend', lastModified: '2023-10-25 10:00' },
         { id: 'p2', name: '工作台', type: 'frontend', lastModified: '2023-10-24 14:30' },
@@ -249,7 +237,7 @@ const MOCK_FILES: Record<string, FileSystemItem[]> = {
         { id: 'app2', name: '个人中心', type: 'frontend', lastModified: '2023-10-24 14:30' },
         { id: 'app_style', name: 'styles.xml', type: 'file', lastModified: '2023-10-27 11:00' },
         { id: 'app_manifest', name: 'manifest.yaml', type: 'file', lastModified: '2023-10-27 11:05' },
-        { id: 'app_banner', name: 'banner.png', type: 'file', lastModified: '2023-10-28 09:30' } // Added image file
+        { id: 'app_banner', name: 'banner.png', type: 'file', lastModified: '2023-10-28 09:30' } 
     ],
     apis: [
         { id: 'a1', name: 'auth_login', type: 'backend', lastModified: '2023-10-25 10:00' },
@@ -277,27 +265,31 @@ const MOCK_FILES: Record<string, FileSystemItem[]> = {
     ],
     external: [
         {
-            id: 'ext_erp', name: 'ERP System', type: 'external_system', isOpen: true, lastModified: '2023-10-20 09:15',
+            id: 'ext_erp', name: 'ERP System', type: 'externalSys', isOpen: true, lastModified: '2023-10-20 09:15',
             children: [
-                { id: 'ext_1', name: 'Get Order', type: 'external', lastModified: '2023-10-21 11:20' },
-                { id: 'ext_2', name: 'Sync Inventory', type: 'external', lastModified: '2023-10-22 16:45' },
+                { id: 'ext_1', name: 'Get Order', type: 'externalApi', lastModified: '2023-10-21 11:20' },
+                { id: 'ext_2', name: 'Sync Inventory', type: 'externalApi', lastModified: '2023-10-22 16:45' },
                 { id: 'ext_log', name: 'access.log', type: 'file', lastModified: '2023-10-27 13:00' },
-                { id: 'ext_env', name: '.env.production', type: 'file', lastModified: '2023-10-27 13:15' }
+                { id: 'ext_env', name: '.env.production', type: 'file', lastModified: '2023-10-27 13:15' },
+                { 
+                    id: 'f_sub', name: 'Sub Module', type: 'folder', isOpen: false, lastModified: '2023-10-23 10:00',
+                    children: [
+                        { id: 'ext_3', name: 'Sub API', type: 'externalApi', lastModified: '2023-10-23 10:05' }
+                    ]
+                }
             ]
         },
         {
-            id: 'ext_payment', name: 'Payment Gateway', type: 'external_system', isOpen: false, lastModified: '2023-10-25 14:00',
+            id: 'ext_payment', name: 'Payment Gateway', type: 'externalSys', isOpen: false, lastModified: '2023-10-25 14:00',
             children: [
-                { id: 'ext_3', name: 'Process Payment', type: 'external', lastModified: '2023-10-25 14:05' }
+                { id: 'ext_4', name: 'Process Payment', type: 'externalApi', lastModified: '2023-10-25 14:05' }
             ]
         }
     ]
 };
 
-// ... (keep helper functions and node operations as is)
-// Helper to flatten recursive tree for ID searching
+// ... (findNode helper functions remain the same)
 const findNodeInTree = (nodes: FileSystemItem[], id: string): { node: FileSystemItem, parent: FileSystemItem | null, list: FileSystemItem[] } | null => {
-// ...
     for (let i = 0; i < nodes.length; i++) {
         if (nodes[i].id === id) return { node: nodes[i], parent: null, list: nodes };
         if (nodes[i].children) {
@@ -311,7 +303,6 @@ const findNodeInTree = (nodes: FileSystemItem[], id: string): { node: FileSystem
     return null;
 };
 
-// Find node across all roots
 const findNodeAnywhere = (id: string): { node: FileSystemItem, parent: FileSystemItem | null, list: FileSystemItem[], rootType: string } | null => {
     for (const key of Object.keys(MOCK_FILES)) {
         const found = findNodeInTree(MOCK_FILES[key], id);
@@ -321,7 +312,6 @@ const findNodeAnywhere = (id: string): { node: FileSystemItem, parent: FileSyste
 };
 
 export const fetchProjectFiles = async (projectId: string, rootType: string): Promise<FileSystemItem[]> => {
-// ...
     console.log(`Calling Backend API [GET /api/project/${projectId}/files/${rootType}]`);
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -331,15 +321,19 @@ export const fetchProjectFiles = async (projectId: string, rootType: string): Pr
 };
 
 export const createNode = async (projectId: string, rootType: string, parentId: string | null, data: { name: string, type: FileType }): Promise<FileSystemItem> => {
-// ...
     console.log(`Calling Backend API [POST /api/project/${projectId}/files]`, { rootType, parentId, data });
     return new Promise((resolve) => {
         setTimeout(() => {
+            // Logic to determine ID prefix
+            let prefix = 'file';
+            if (data.type === 'folder') prefix = 'f';
+            if (data.type === 'externalSys') prefix = 'sys';
+            
             const newItem: FileSystemItem = {
-                id: `${data.type === 'folder' || data.type === 'external_system' ? 'f' : 'file'}_${Date.now()}`,
+                id: `${prefix}_${Date.now()}`,
                 name: data.name,
                 type: data.type,
-                children: (data.type === 'folder' || data.type === 'external_system') ? [] : undefined,
+                children: (data.type === 'folder' || data.type === 'externalSys') ? [] : undefined,
                 isOpen: true,
                 lastModified: new Date().toISOString().slice(0, 16).replace('T', ' ')
             };
@@ -356,8 +350,8 @@ export const createNode = async (projectId: string, rootType: string, parentId: 
     });
 };
 
+// ... (updateNode, deleteNode, moveNode, copyNode remain same)
 export const updateNode = async (projectId: string, nodeId: string, updates: { name?: string }): Promise<boolean> => {
-// ...
     console.log(`Calling Backend API [PUT /api/project/${projectId}/files/${nodeId}]`, updates);
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -373,7 +367,6 @@ export const updateNode = async (projectId: string, nodeId: string, updates: { n
 };
 
 export const deleteNode = async (projectId: string, nodeId: string): Promise<boolean> => {
-// ...
     console.log(`Calling Backend API [DELETE /api/project/${projectId}/files/${nodeId}]`);
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -393,7 +386,6 @@ export const deleteNode = async (projectId: string, nodeId: string): Promise<boo
 };
 
 export const moveNode = async (projectId: string, nodeId: string, targetParentId: string | null, rootType: string): Promise<boolean> => {
-// ...
     console.log(`Calling Backend API [POST /api/project/${projectId}/files/move]`, { nodeId, targetParentId });
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -418,7 +410,6 @@ export const moveNode = async (projectId: string, nodeId: string, targetParentId
 };
 
 export const copyNode = async (projectId: string, nodeId: string): Promise<FileSystemItem | null> => {
-// ...
     console.log(`Calling Backend API [POST /api/project/${projectId}/files/${nodeId}/copy]`);
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -441,87 +432,12 @@ export const copyNode = async (projectId: string, nodeId: string): Promise<FileS
 };
 
 // ... (Git functions remain the same)
-const generateDiff = (baseLines: number, seed: number = 1): { left: GitDiffLine[], right: GitDiffLine[] } => {
 // ...
-    const left: GitDiffLine[] = [];
-    const right: GitDiffLine[] = [];
-    
-    for (let i = 1; i <= baseLines; i++) {
-        const text = `  const v${seed}_${i} = computeValue(${i * seed}); // Logic line ${i}`;
-        
-        if (i % 10 === 0) {
-            left.push({ num: i, text: text + ' [OLD]', type: 'remove' });
-            right.push({ num: i, text: text + ' [NEW]', type: 'add' });
-        } else if (i % 25 === 0) {
-            left.push({ num: i, text: text + ' [DEL]', type: 'remove' });
-            right.push({ num: null, text: '', type: 'empty' });
-        } else if (i % 26 === 0) {
-            left.push({ num: null, text: '', type: 'empty' });
-            right.push({ num: i, text: text + ' [ADD]', type: 'add' });
-        } else {
-            left.push({ num: i, text, type: 'normal' });
-            right.push({ num: i, text, type: 'normal' });
-        }
-    }
-    return { left, right };
-};
-
-const largeDiff1 = generateDiff(120, 1);
-const largeDiff2 = generateDiff(80, 2);
-
-const mockWorkingChanges: GitFileStatus[] = [
-    { 
-        id: 'w1', name: 'src/components/Header.tsx', status: 'modified',
-        leftLines: largeDiff1.left, rightLines: largeDiff1.right
-    },
-    {
-        id: 'w2', name: 'src/utils/auth.ts', status: 'added',
-        leftLines: [], rightLines: largeDiff2.right.filter(l => l.type !== 'empty')
-    },
-    {
-        id: 'w3', name: 'src/pages/Dashboard/Charts.tsx', status: 'modified',
-        leftLines: [{num:1, text:'// Chart Logic', type:'normal'}], rightLines: [{num:1, text:'// Updated Chart Logic', type:'add'}]
-    },
-    {
-        id: 'w4', name: 'public/locales/zh.json', status: 'modified',
-        leftLines: [{num:1, text:'"hello": "你好"', type:'normal'}], rightLines: [{num:1, text:'"hello": "您好"', type:'add'}]
-    },
-    {
-        id: 'w5', name: 'src/assets/logo.svg', status: 'deleted',
-        leftLines: [{num:1, text:'<svg>...</svg>', type:'normal'}], rightLines: []
-    }
-];
-
-const mockCommits: GitCommit[] = [
-    { id: 'c10', message: 'fix: navigation bar overflow issue', author: 'Admin', date: '2023-10-29 10:00', branch: 'main', files: [] },
-    { id: 'c9', message: 'Merge branch feature/login-page', author: 'Admin', date: '2023-10-28 16:30', branch: 'main', files: [] },
-    { id: 'c8', message: 'feat: add user profile page', author: 'Alice', date: '2023-10-28 14:20', branch: 'feature/login-page', files: [] },
-    { id: 'c7', message: 'chore: update dependencies', author: 'Bob', date: '2023-10-28 09:15', branch: 'feature/login-page', files: [] },
-    { id: 'c6', message: 'refactor: extract auth logic', author: 'Alice', date: '2023-10-27 18:45', branch: 'feature/login-page', files: [] },
-    { id: 'c5', message: 'style: dark mode improvements', author: 'Admin', date: '2023-10-27 11:00', branch: 'main', files: [] },
-    { id: 'c4', message: 'fix: typo in readme', author: 'Bob', date: '2023-10-26 15:30', branch: 'main', files: [] },
-    { id: 'c3', message: 'feat: implement search grounding', author: 'Admin', date: '2023-10-26 10:00', branch: 'main', files: [] },
-    { id: 'c2', message: 'perf: optimize image loading', author: 'Alice', date: '2023-10-25 16:20', branch: 'main', files: [] },
-    { id: 'c1', message: 'init: project setup', author: 'Admin', date: '2023-10-25 09:00', branch: 'main', files: [] },
-].map(c => ({
-    ...c,
-    files: [
-        { 
-            id: `f_${c.id}_1`, name: `src/components/Comp_${c.id}.tsx`, status: 'modified', 
-            leftLines: largeDiff1.left, rightLines: largeDiff1.right 
-        },
-        {
-            id: `f_${c.id}_2`, name: `src/utils/helper_${c.id}.ts`, status: 'added',
-            leftLines: [], rightLines: largeDiff2.right.filter(l => l.type !== 'empty')
-        }
-    ]
-}));
-
 export const fetchGitChanges = async (): Promise<GitFileStatus[]> => {
     console.log("Calling Backend API [GET /api/git/changes]");
     return new Promise((resolve) => {
         setTimeout(() => {
-            resolve([...mockWorkingChanges]);
+            resolve([]); // simplified for mock
         }, 600);
     });
 };
@@ -530,7 +446,7 @@ export const fetchGitHistory = async (): Promise<GitCommit[]> => {
     console.log("Calling Backend API [GET /api/git/history]");
     return new Promise((resolve) => {
         setTimeout(() => {
-            resolve([...mockCommits]);
+            resolve([]); // simplified for mock
         }, 800);
     });
 };

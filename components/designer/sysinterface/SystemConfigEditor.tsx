@@ -5,10 +5,11 @@ import {
   Play, Plus, Trash2, Key, Box, Settings, X, Lock, FileJson, CheckSquare, Copy, Check
 } from 'lucide-react';
 import { saveSystemConfig } from '../../../services/mockService';
+import TagInput from '../../common/TagInput';
 
 interface SystemConfigEditorProps {
   file: any;
-  lang?: 'zh' | 'en'; // Added lang prop
+  lang?: 'zh' | 'en'; 
 }
 
 // Mock Java Classes for selection (same as before)
@@ -61,7 +62,6 @@ interface EnvParam {
 const SystemConfigEditor: React.FC<SystemConfigEditorProps> = ({ file, lang = 'zh' }) => {
   const [activeTab, setActiveTab] = useState<'basic' | 'env' | 'auth' | 'hooks'>('basic');
   const [tags, setTags] = useState<string[]>(['ERP', 'Legacy']);
-  const [newTag, setNewTag] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // JSON Modal State
@@ -77,7 +77,7 @@ const SystemConfigEditor: React.FC<SystemConfigEditorProps> = ({ file, lang = 'z
           basicInfo: '基础信息',
           environments: '环境配置',
           authentication: '鉴权配置',
-          hooks: 'Java 钩子',
+          hooks: '调用Hook',
           systemName: '系统名称',
           tags: '标签',
           desc: '描述 / 备注',
@@ -111,7 +111,7 @@ const SystemConfigEditor: React.FC<SystemConfigEditorProps> = ({ file, lang = 'z
           basicInfo: 'Basic Info',
           environments: 'Environments',
           authentication: 'Authentication',
-          hooks: 'Hooks (Java)',
+          hooks: 'Invoke Hook',
           systemName: 'System Name',
           tags: 'Tags',
           desc: 'Description / Remarks',
@@ -209,17 +209,6 @@ const SystemConfigEditor: React.FC<SystemConfigEditorProps> = ({ file, lang = 'z
           setConfig(prev => ({...prev, name: file.title}));
       }
   }, [file]);
-
-  const handleAddTag = () => {
-      if(newTag.trim()) {
-          setTags([...tags, newTag.trim()]);
-          setNewTag('');
-      }
-  };
-
-  const removeTag = (tag: string) => {
-      setTags(tags.filter(t => t !== tag));
-  };
 
   const updateHook = (type: 'preAction' | 'postAction' | 'customAuth', updates: Partial<JavaHookConfig>) => {
       setConfig(prev => ({
@@ -769,25 +758,7 @@ const SystemConfigEditor: React.FC<SystemConfigEditorProps> = ({ file, lang = 'z
                       
                       <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t.tags}</label>
-                          <div className="flex flex-wrap gap-2 mb-2">
-                              {tags.map(tag => (
-                                  <span key={tag} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded text-xs flex items-center gap-1">
-                                      {tag}
-                                      <button onClick={() => removeTag(tag)} className="hover:text-red-500"><Trash2 size={10} /></button>
-                                  </span>
-                              ))}
-                              <div className="flex items-center gap-1">
-                                  <input 
-                                    type="text" 
-                                    value={newTag}
-                                    onChange={e => setNewTag(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && handleAddTag()}
-                                    placeholder={t.addParam} // Reusing 'Add' text
-                                    className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-transparent outline-none w-24 focus:w-32 transition-all"
-                                  />
-                                  <button onClick={handleAddTag} className="p-1 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200"><Plus size={12} /></button>
-                              </div>
-                          </div>
+                          <TagInput tags={tags} onChange={setTags} />
                       </div>
 
                       <div>
